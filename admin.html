@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理後台 - 全球國家文化探索</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: #f1f5f9; }
+        .admin-shell { max-width: 900px; margin: 0 auto; padding: 24px; }
+        .admin-header { margin-bottom: 24px; }
+        .admin-header h1 { margin: 0 0 10px; }
+        .admin-panel { background: #fff; border-radius: 24px; padding: 28px; box-shadow: 0 20px 48px rgba(15,23,42,0.08); }
+        .field-group { margin-bottom: 18px; }
+        .field-group label { display: block; margin-bottom: 8px; font-weight: 700; color: #0f172a; }
+        .field-group input, .field-group textarea { width: 100%; border-radius: 16px; border: 1px solid #cbd5e1; padding: 14px 16px; font-size: 1rem; }
+        .field-group textarea { min-height: 120px; resize: vertical; }
+        .button-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 12px; }
+        .admin-note { margin-top: 20px; padding: 16px; border-radius: 18px; background: #eef2ff; color: #3730a3; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="admin-shell">
+        <header class="admin-header">
+            <h1>管理後台</h1>
+            <p>透過 Google OAuth 登入後，可新增或更新國家文化資料並同步到 Google 試算表。</p>
+        </header>
+
+        <section id="auth-panel" class="admin-panel">
+            <div class="field-group">
+                <p>請先登入管理員帳號。</p>
+            </div>
+            <div class="button-row">
+                <button id="sign-in-btn" class="primary-button">Google 登入</button>
+                <button id="sign-out-btn" class="ghost-button hidden">登出</button>
+            </div>
+            <div id="auth-message" class="admin-note">若要啟用 OAuth，請在程式碼中填入 <code>GOOGLE_CLIENT_ID</code> 與授權電子郵件。</div>
+        </section>
+
+        <section id="admin-panel" class="admin-panel hidden">
+            <div class="field-group">
+                <label for="country-name">國家名稱</label>
+                <input type="text" id="country-name" placeholder="輸入國家名稱，例如：日本" />
+            </div>
+            <div class="field-group">
+                <label for="country-tagline">國家標語 / 代表描述</label>
+                <input type="text" id="country-tagline" placeholder="例如：禮節與細膩的島國" />
+            </div>
+            <div class="field-group">
+                <label for="country-culture">核心文化介紹</label>
+                <textarea id="country-culture" placeholder="描述該國文化重點..."></textarea>
+            </div>
+            <div class="field-group">
+                <label for="country-taboo">社交與生活禁忌</label>
+                <textarea id="country-taboo" placeholder="描述禁忌與禮儀警示..."></textarea>
+            </div>
+            <div class="field-group">
+                <label for="country-festival">推薦造訪節慶</label>
+                <input type="text" id="country-festival" placeholder="例如：櫻花祭、聖誕節..." />
+            </div>
+            <div class="field-group">
+                <label for="country-greeting">常用禮儀問候語</label>
+                <input type="text" id="country-greeting" placeholder="例如：Hello、Merci、こんにちは..." />
+            </div>
+            <div class="button-row">
+                <button id="ai-generate-btn" class="ghost-button">AI 自動生成</button>
+                <button id="save-btn" class="primary-button">儲存國家資料</button>
+            </div>
+            <div id="admin-status" class="admin-note">請先輸入國家名稱，然後點擊「AI 自動生成」或「儲存國家資料」。</div>
+        </section>
+    </div>
+
+    <script>
+        const GOOGLE_CLIENT_ID = ''; // 將此處設為 Google OAuth Client ID
+        const ALLOWED_EMAILS = ['admin@example.com']; // 將此處換成管理員 Email
+        const GAS_WEB_APP_URL = ''; // 設定 Google Apps Script Web App URL
+        const AI_API_URL = ''; // 若啟用 AI 自動生成，填入 AI API 端點
+        const AI_API_KEY = ''; // 若啟用 AI 自動生成，填入 API Key
+
+        const signInBtn = document.getElementById('sign-in-btn');
+        const signOutBtn = document.getElementById('sign-out-btn');
+        const authMessage = document.getElementById('auth-message');
+        const authPanel = document.getElementById('auth-panel');
+        const adminPanel = document.getElementById('admin-panel');
+        const adminStatus = document.getElementById('admin-status');
+
+        const inputCountry = document.getElementById('country-name');
+        const inputTagline = document.getElementById('country-tagline');
+        const inputCulture = document.getElementById('country-culture');
+        const inputTaboo = document.getElementById('country-taboo');
+        const inputFestival = document.getElementById('country-festival');
+        const inputGreeting = document.getElementById('country-greeting');
+        const saveBtn = document.getElementById('save-btn');
+        const aiGenerateBtn = document.getElementById('ai-generate-btn');
+
+        function setAdminStatus(message, isError = false) {
+            adminStatus.textContent = message;
+            adminStatus.style.background = isError ? '#fde8e8' : '#eef2ff';
+            adminStatus.style.color = isError ? '#991b1b' : '#3730a3';
+        }
+
+        function showAdmin() {
+            authPanel.classList.add('hidden');
+            adminPanel.classList.remove('hidden');
+            signOutBtn.classList.remove('hidden');
+        }
+
+        function showAuth() {
+            authPanel.classList.remove('hidden');
+            adminPanel.classList.add('hidden');
+            signOutBtn.classList.add('hidden');
+        }
+
+        function handleSignInSuccess(userEmail) {
+            if (ALLOWED_EMAILS.includes(userEmail)) {
+                showAdmin();
+                setAdminStatus(`已驗證：${userEmail}`);
+            } else {
+                setAdminStatus('此帳號無管理員權限，請使用授權 Email 登入。', true);
+            }
+        }
+
+        async function saveCountry() {
+            const country = inputCountry.value.trim();
+            if (!country) {
+                setAdminStatus('請先輸入國家名稱。', true);
+                return;
+            }
+            if (!GAS_WEB_APP_URL) {
+                setAdminStatus('未設定 GAS Web App URL，無法儲存。', true);
+                return;
+            }
+            const payload = {
+                country,
+                tagline: inputTagline.value.trim(),
+                culture: inputCulture.value.trim(),
+                taboo: inputTaboo.value.trim(),
+                festival: inputFestival.value.trim(),
+                greeting: inputGreeting.value.trim()
+            };
+            try {
+                setAdminStatus('正在儲存國家資料…');
+                const response = await fetch(`${GAS_WEB_APP_URL}?action=save`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (result.success) {
+                    setAdminStatus('國家資料已成功儲存。');
+                } else {
+                    throw new Error(result.message || '儲存失敗');
+                }
+            } catch (error) {
+                console.error(error);
+                setAdminStatus('儲存失敗，請確認後端設定是否正確。', true);
+            }
+        }
+
+        async function generateCountryData() {
+            const country = inputCountry.value.trim();
+            if (!country) {
+                setAdminStatus('請先輸入國家名稱再自動生成。', true);
+                return;
+            }
+            if (!AI_API_URL || !AI_API_KEY) {
+                setAdminStatus('AI 端點或金鑰未設定，請手動編輯資料。', true);
+                return;
+            }
+            try {
+                setAdminStatus('正在呼叫 AI 生成資料…');
+                const response = await fetch(AI_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${AI_API_KEY}`
+                    },
+                    body: JSON.stringify({ country })
+                });
+                const result = await response.json();
+                if (result && result.data) {
+                    inputTagline.value = result.data.tagline || inputTagline.value;
+                    inputCulture.value = result.data.culture || inputCulture.value;
+                    inputTaboo.value = result.data.taboo || inputTaboo.value;
+                    inputFestival.value = result.data.festival || inputFestival.value;
+                    inputGreeting.value = result.data.greeting || inputGreeting.value;
+                    setAdminStatus('已自動填入，請再確認內容後儲存。');
+                } else {
+                    throw new Error('AI 回傳格式錯誤');
+                }
+            } catch (error) {
+                console.error(error);
+                setAdminStatus('AI 生成失敗，請稍後再試。', true);
+            }
+        }
+
+        function mockSignIn() {
+            const email = prompt('請輸入管理員 Email 進行模擬登入：', 'admin@example.com');
+            if (email) {
+                handleSignInSuccess(email);
+            }
+        }
+
+        signInBtn.addEventListener('click', () => {
+            if (!GOOGLE_CLIENT_ID) {
+                mockSignIn();
+                return;
+            }
+            setAdminStatus('請完成 Google 登入流程。');
+            // 這裡可新增 Google Identity Services 的初始化程式碼
+        });
+
+        signOutBtn.addEventListener('click', () => {
+            showAuth();
+            setAdminStatus('已登出，請重新登入。');
+        });
+        saveBtn.addEventListener('click', saveCountry);
+        aiGenerateBtn.addEventListener('click', generateCountryData);
+    </script>
+</body>
+</html>

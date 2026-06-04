@@ -3,19 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todo App</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>國家文化速查</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Todo App</h1>
-    <div class="todo-input">
-        <input type="text" id="todo-title" placeholder="New todo">
-        <textarea id="todo-description" placeholder="Description"></textarea>
-        <button onclick="addTodo()">Add Todo</button>
+    <div class="page-shell">
+        <header class="topbar">
+            <div>
+                <h1>全球國家文化探索</h1>
+                <p>隨機抽取或搜尋國家，透過翻轉卡片探索文化、禁忌與禮儀。</p>
+            </div>
+            <button id="admin-entry" class="ghost-button">管理後台</button>
+        </header>
+
+        <main class="main-grid">
+            <section class="card-panel">
+                <div class="card-scene" aria-label="國家卡片">
+                    <div class="country-card" id="country-card">
+                        <div class="card-face card-front">
+                            <div class="flag-icon" id="country-flag">🌏</div>
+                            <h2 id="result-country">請選擇國家</h2>
+                            <p id="result-tagline">點擊卡片翻轉，查看文化與禁忌。</p>
+                        </div>
+                        <div class="card-face card-back">
+                            <div class="detail-group">
+                                <h3>核心文化介紹</h3>
+                                <p id="culture-text">你可以輸入國家名稱或按下「隨機抽取國家」來開始。</p>
+                            </div>
+                            <div class="detail-group">
+                                <h3>社交與生活禁忌</h3>
+                                <p id="taboo-text">每個國家都有獨特的習俗與禁忌，請尊重當地文化。</p>
+                            </div>
+                            <div class="detail-group two-column">
+                                <div>
+                                    <h3>推薦造訪節慶</h3>
+                                    <p id="festival-text">-</p>
+                                </div>
+                                <div>
+                                    <h3>常用問候語</h3>
+                                    <p id="greeting-text">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="control-panel">
+                <div class="search-box">
+                    <input type="text" id="country-input" placeholder="輸入國家名稱，例如：日本、法國、印度" />
+                    <button id="search-btn">搜尋國家</button>
+                </div>
+                <button id="random-btn" class="primary-button">隨機抽取國家</button>
+                <div class="status-box" id="status-box">載入資料中…</div>
+                <p class="hint-text">支援中英文輸入；卡片點擊可翻轉查看詳細資訊。</p>
+            </section>
+        </main>
     </div>
-    <ul class="todo-list" id="todo-list">
-        <!-- Initial todos will be added by JS -->
-    </ul>
 
     <script src="script.js"></script>
 </body>
