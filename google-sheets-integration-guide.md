@@ -1,92 +1,143 @@
 # Google Sheets + Google Apps Script 整合指南
 
-本專案為「全球國家文化探索 App」，包含前端卡片探索頁、管理後台，以及透過 Google Apps Script 將資料寫入 Google 試算表的完整範例。
+本專案為「全球國家文化探索 App」，包含前端卡片探索頁、管理後台，以及透過 Google Apps Script 將資料寫入 Google 試算表的完整整合教學。
 
-## 一、專案功能對應
+## 1. 你的目標
 
-1. **前端網頁效果**
-   - `index.html`：首頁卡片探索頁，支援卡片翻轉動畫、隨機抽取、國家搜尋。
-   - `style.css`：卡片 3D 翻轉特效、版面配置與響應式設計。
-   - `script.js`：前端資料渲染、卡片互動、搜尋邏輯、Google Sheets 讀取呼叫。
-
-2. **呼叫 API 自動填入資料**
-   - `admin.html`：管理後台頁面提供「AI 自動生成」按鈕介面。
-   - 可設定 `AI_API_URL` 與 `AI_API_KEY`，串接 OpenAI / Gemini 或自訂文化資料 API。
-
-3. **系統資料存入 Google Sheets**
-   - `backend_gas.js`：Google Apps Script 後端範例，支援讀取 (`read`) 與儲存 (`save`) 動作。
-   - 在 `script.js` 與 `admin.html` 中設定 `GAS_WEB_APP_URL`，即可連接 Google Sheets 後端。
-
-4. **GitHub Pages 網址**
-   - 若已部署 GitHub Pages，網址通常為：
-     `https://<GitHub 使用者名稱>.github.io/ooooo/`
-   - 請在 GitHub repo 的 `Settings` → `Pages` 設定分支為 `main`、根目錄 `/`。
+- 讓 `index.html` 從 Google 試算表讀取國家資料
+- 讓 `admin.html` 新增資料時寫入 Google 試算表
+- 使用 `backend_gas.js` 作為 Apps Script 後端
+- 設定以下兩個值：
+  - `SPREADSHEET_ID`
+  - `GAS_WEB_APP_URL`
 
 ---
 
-## 二、建立 Google 試算表與 Apps Script
+## 2. 建立 Google 試算表
 
-### 1. 建立試算表
-1. 登入 Google 帳號，打開 Google Sheets。
+1. 登入 Google 帳號，開啟 Google Sheets。
 2. 建立新的空白試算表。
-3. 新增工作表並命名為 `Countries`。
-4. 在第一列填入欄位：`country`, `flag`, `tagline`, `culture`, `taboo`, `festival`, `greeting`。
+3. 將工作表名稱改為 `Countries`。
+4. 在第一列填入下列欄位名稱：
+   - `country`
+   - `flag`
+   - `tagline`
+   - `culture`
+   - `taboo`
+   - `festival`
+   - `greeting`
 
-### 2. 建立 Google Apps Script
-1. 在試算表中點選 `擴充功能` → `Apps Script`。
-2. 新增專案後，貼入專案中的 `backend_gas.js` 內容。
-3. 修改 `SPREADSHEET_ID` 為實際試算表 ID。
+例如：
 
-### 3. 部署 Web App
-1. 在 Apps Script 中點選 `部署` → `新建部署`。
-2. 選擇 `Web 應用程式`。
+| country | flag | tagline | culture | taboo | festival | greeting |
+|---|---|---|---|---|---|---|
+| 日本 | 🇯🇵 | 以細膩與禮節著稱的島國 | ... | ... | ... | ... |
+
+---
+
+## 3. 建立 Apps Script 後端
+
+1. 在試算表功能表點選 `擴充功能` → `Apps Script`。
+2. 建立新專案。
+3. 將 `backend_gas.js` 的完整程式內容貼到 Apps Script 編輯器中。
+4. 修改 `SPREADSHEET_ID` 為你的試算表 ID：
+   - 從試算表網址擷取，例如 `https://docs.google.com/spreadsheets/d/<SPREADSHEET_ID>/edit`
+   - 將 `<SPREADSHEET_ID>` 貼到 `backend_gas.js` 中
+5. 確認 `SHEET_NAME = 'Countries'`。
+
+---
+
+## 4. 部署 Web App
+
+1. 在 Apps Script 編輯器右上角點選 `部署` → `新建部署`。
+2. 部署類型選擇 `Web 應用程式`。
 3. `執行身分` 選擇 `我`。
-4. `存取權限` 選擇 `任何人` 或 `任何有 Google 帳號的人`。
-5. 點擊 `部署`，並複製產生的 URL。
-6. 將 URL 設定到 `script.js` 與 `admin.html` 的 `GAS_WEB_APP_URL`。
+4. `應用程式存取權` 選擇：
+   - `任何人`，或
+   - `任何有 Google 帳號的人`
+5. 按下 `部署`。
+6. 複製部署完成後的 Web 應用程式 URL。
 
 ---
 
-## 三、前端整合說明
+## 5. 更新前端設定
 
-### 首頁 `index.html`
-- 載入時會嘗試從 `GAS_WEB_APP_URL?action=read` 讀取國家資料。
-- 若未設定 URL，則使用內建示範資料。
-- 使用者可輸入國家名稱或點擊「隨機抽取國家」。
-- 點擊卡片後會觸發翻轉動畫，查看詳細資訊。
+### 5.1 更新 `script.js`
 
-### 管理後台 `admin.html`
-- 支援 mock 模式的管理員登入測試。
-- 填寫國家資料後，點擊「儲存國家資料」會發送 `POST` 請求到 GAS 後端。
-- 若設定 AI API，可點擊「AI 自動生成」，自動填入欄位內容。
+找到檔案開頭：
 
-### 資料儲存流程
-- 前端會發送 JSON 到 `GAS_WEB_APP_URL?action=save`。
-- Apps Script 會將資料 append 到試算表最後一列。
+```js
+const GAS_WEB_APP_URL = ''; // 部署 Google Apps Script 後請填入 Web App URL，例如：https://script.google.com/macros/s/XXXXXXXXXXXX/exec
+```
 
----
+填入你剛才複製的 Web App URL。
 
-## 四、GitHub Pages 部署
+### 5.2 更新 `admin.html`
 
-### 1. 將專案推上 GitHub
-1. 確認專案已經在 GitHub repository 中。
-2. 若尚未，建立 repo 並推送目前檔案。
+找到：
 
-### 2. 設定 GitHub Pages
-1. 進入 GitHub repo 的 `Settings`。
-2. 找到 `Pages` 或 `GitHub Pages`。
-3. 選擇分支 `main`、根目錄 `/`。
-4. 儲存設定並稍等部署完成。
+```js
+const GAS_WEB_APP_URL = ''; // 設定 Google Apps Script Web App URL，例如：https://script.google.com/macros/s/XXXXXXXXXXXX/exec
+```
 
-### 3. 取得 Pages 網址
-- GitHub Pages 會顯示部署後的網站網址。
-- 範例： `https://312065-ops.github.io/ooooo/`。
-- 若使用不同帳號，請改為自己的 GitHub 使用者名稱。
+同樣填入同一個 URL。
 
 ---
 
-## 五、補充說明
+## 6. 確認應該可以正常運作的功能
 
-- 若要實作完整 OAuth 管理員驗證，請在 `admin.html` 中填入 `GOOGLE_CLIENT_ID`，並串接 Google Identity Services。
-- 若要正式啟用 AI 自動填入，請在 `admin.html` 中填入 `AI_API_URL` 與 `AI_API_KEY`。
-- 本專案已經包含前端效果、AI 自動填入按鈕介面、以及 Google Sheets 寫入後端範例。
+### `index.html`
+- 載入時會先嘗試呼叫 `GET ?action=read`。
+- 若成功，頁面會顯示試算表中的國家資料。
+- 若失敗，會回退成內建本機示範資料。
+
+### `admin.html`
+- 按下 `儲存國家資料` 後，會發送 `POST ?action=save` 到 GAS Web App。
+- 試算表會將內容寫入 `Countries` 工作表最後一列。
+
+---
+
+## 7. 本機測試方式
+
+建議在本機啟動 HTTP 伺服器，避免直接以 `file://` 開啟造成資源或跨域問題。
+
+```bash
+cd /workspaces/ooooo
+python3 -m http.server 8000
+```
+
+然後瀏覽：
+- `http://localhost:8000/index.html`
+- `http://localhost:8000/admin.html`
+
+---
+
+## 8. 常見問題與快速排錯
+
+### 8.1 GAS Web App 讀不到資料
+
+- 確認 `SPREADSHEET_ID` 正確
+- 確認試算表工作表名稱為 `Countries`
+- 確認第 1 列欄位名稱正確
+- 確認 Apps Script 部署已成功
+- 確認 `script.js` 的 `GAS_WEB_APP_URL` 已填入 Web App URL
+
+### 8.2 新增資料寫入失敗
+
+- 確認 `admin.html` 的 `GAS_WEB_APP_URL` 已填入同一個 Web App URL
+- 確認瀏覽器 Console 沒有 `CORS` 錯誤
+- 確認 Apps Script `doPost()` 可以處理 `action=save`
+
+### 8.3 想要管理員驗證或 AI 生成
+
+- 若要啟用完整管理員登入，請在 `admin.html` 填入 `GOOGLE_CLIENT_ID`，並補上 Google Identity Services 初始化程式碼。
+- 若要啟用 AI 自動生成，請填入 `AI_API_URL` 與 `AI_API_KEY`。
+
+---
+
+## 9. 進階補充
+
+- `backend_gas.js` 已支援：
+  - `GET?action=read` → 讀取試算表資料
+  - `POST?action=save` → 寫入試算表資料
+- `script.js` 與 `admin.html` 均已調整為透過 `application/x-www-form-urlencoded` 傳送 POST 資料，讓 GAS 後端能正確解析。

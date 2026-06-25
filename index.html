@@ -56,6 +56,35 @@
                 </div>
                 <button id="random-btn" class="primary-button">隨機抽取國家</button>
                 <div class="status-box" id="status-box">載入資料中…</div>
+                <section id="add-country-section" class="admin-panel hidden">
+                    <h3>新增國家資料</h3>
+                    <p id="add-country-note">找不到該國家？請補上資料並按下「新增國家」。</p>
+                    <div class="field-group">
+                        <label for="new-country-name">國家名稱</label>
+                        <input type="text" id="new-country-name" readonly />
+                    </div>
+                    <div class="field-group">
+                        <label for="new-country-tagline">國家標語 / 代表描述</label>
+                        <input type="text" id="new-country-tagline" placeholder="例如：海洋與文化共融的國度" />
+                    </div>
+                    <div class="field-group">
+                        <label for="new-country-culture">核心文化介紹</label>
+                        <textarea id="new-country-culture" placeholder="描述該國文化重點..."></textarea>
+                    </div>
+                    <div class="field-group">
+                        <label for="new-country-taboo">社交與生活禁忌</label>
+                        <textarea id="new-country-taboo" placeholder="描述禁忌與禮儀警示..."></textarea>
+                    </div>
+                    <div class="field-group">
+                        <label for="new-country-festival">推薦造訪節慶</label>
+                        <input type="text" id="new-country-festival" placeholder="例如：燈節、國慶日..." />
+                    </div>
+                    <div class="field-group">
+                        <label for="new-country-greeting">常用禮儀問候語</label>
+                        <input type="text" id="new-country-greeting" placeholder="例如：Hello、謝謝..." />
+                    </div>
+                    <button id="add-country-btn" class="primary-button">新增國家</button>
+                </section>
                 <p class="hint-text">支援中英文輸入；卡片點擊可翻轉查看詳細資訊。</p>
             </section>
         </main>

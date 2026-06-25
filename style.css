@@ -187,6 +187,31 @@ input {
     background: #fde8e8;
     color: #991b1b;
 }
+.hidden {
+    display: none;
+}
+.field-group {
+    margin-bottom: 16px;
+}
+.field-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+    color: #0f172a;
+}
+.field-group input,
+.field-group textarea {
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 16px;
+    padding: 14px 16px;
+    font-size: 1rem;
+    outline: none;
+    resize: vertical;
+}
+.field-group textarea {
+    min-height: 100px;
+}
 .hint-text {
     margin-top: 18px;
     color: #475569;

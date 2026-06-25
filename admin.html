@@ -74,7 +74,7 @@
     <script>
         const GOOGLE_CLIENT_ID = ''; // 將此處設為 Google OAuth Client ID
         const ALLOWED_EMAILS = ['admin@example.com']; // 將此處換成管理員 Email
-        const GAS_WEB_APP_URL = ''; // 設定 Google Apps Script Web App URL
+        const GAS_WEB_APP_URL = ''; // 設定 Google Apps Script Web App URL，例如：https://script.google.com/macros/s/XXXXXXXXXXXX/exec
         const AI_API_URL = ''; // 若啟用 AI 自動生成，填入 AI API 端點
         const AI_API_KEY = ''; // 若啟用 AI 自動生成，填入 API Key
 
@@ -143,8 +143,8 @@
                 setAdminStatus('正在儲存國家資料…');
                 const response = await fetch(`${GAS_WEB_APP_URL}?action=save`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+                    body: new URLSearchParams(payload)
                 });
                 const result = await response.json();
                 if (result.success) {
